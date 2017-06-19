@@ -25,6 +25,8 @@ import com.intellij.openapi.externalSystem.service.project.manage.AbstractProjec
 import com.intellij.openapi.externalSystem.util.ExternalSystemApiUtil
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.project.Project
+import com.intellij.util.PathUtil
+import org.jetbrains.kotlin.cli.common.arguments.K2JVMCompilerArguments
 import org.jetbrains.kotlin.config.CoroutineSupport
 import org.jetbrains.kotlin.config.JvmTarget
 import org.jetbrains.kotlin.config.LanguageFeature
@@ -130,13 +132,27 @@ private fun configureFacetByGradleModule(
 
     val sourceSetName = sourceSetNode?.data?.id?.let { it.substring(it.lastIndexOf(':') + 1) } ?: "main"
 
-    val currentCompilerArguments = moduleNode.currentCompilerArgumentsBySourceSet?.get(sourceSetName)
-    val defaultCompilerArguments = moduleNode.defaultCompilerArgumentsBySourceSet?.get(sourceSetName) ?: emptyList()
-    if (currentCompilerArguments != null) {
-        parseCompilerArgumentsToFacet(currentCompilerArguments, defaultCompilerArguments, kotlinFacet)
+    val argsInfo = moduleNode.compilerArgumentsBySourceSet?.get(sourceSetName)
+    if (argsInfo != null) {
+        val currentCompilerArguments = argsInfo.currentArguments
+        val defaultCompilerArguments = argsInfo.defaultArguments
+        val dependencyClasspath = argsInfo.dependencyClasspath.map { PathUtil.toSystemIndependentName(it) }
+        if (currentCompilerArguments.isNotEmpty()) {
+            parseCompilerArgumentsToFacet(currentCompilerArguments, defaultCompilerArguments, kotlinFacet)
+        }
+        adjustClasspath(kotlinFacet, dependencyClasspath)
     }
 
     return kotlinFacet
+}
+
+private fun adjustClasspath(kotlinFacet: KotlinFacet, dependencyClasspath: List<String>) {
+    if (!dependencyClasspath.isNotEmpty()) return
+    val arguments = kotlinFacet.configuration.settings.compilerArguments as? K2JVMCompilerArguments ?: return
+    val fullClasspath = arguments.classpath?.split(";") ?: emptyList()
+    if (fullClasspath.isEmpty()) return
+    val newClasspath = fullClasspath - dependencyClasspath
+    arguments.classpath = if (newClasspath.isNotEmpty()) newClasspath.joinToString(";") else null
 }
 
 private val gradlePropertyFiles = listOf("local.properties", "gradle.properties")
