@@ -21566,6 +21566,12 @@ public class JsCodegenBoxTestGenerated extends AbstractJsCodegenBoxTest {
             doTest(fileName);
         }
 
+        @TestMetadata("nestedConcat.kt")
+        public void testNestedConcat() throws Exception {
+            String fileName = KotlinTestUtils.navigationMetadata("compiler/testData/codegen/box/strings/nestedConcat.kt");
+            doTest(fileName);
+        }
+
         @TestMetadata("rawStrings.kt")
         public void testRawStrings() throws Exception {
             String fileName = KotlinTestUtils.navigationMetadata("compiler/testData/codegen/box/strings/rawStrings.kt");

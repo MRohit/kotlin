@@ -1988,6 +1988,12 @@ public class BytecodeTextTestGenerated extends AbstractBytecodeTextTest {
             doTest(fileName);
         }
 
+        @TestMetadata("nestedConcat.kt")
+        public void testNestedConcat() throws Exception {
+            String fileName = KotlinTestUtils.navigationMetadata("compiler/testData/codegen/bytecodeText/stringOperations/nestedConcat.kt");
+            doTest(fileName);
+        }
+
         @TestMetadata("nonNullableStringPlus.kt")
         public void testNonNullableStringPlus() throws Exception {
             String fileName = KotlinTestUtils.navigationMetadata("compiler/testData/codegen/bytecodeText/stringOperations/nonNullableStringPlus.kt");
